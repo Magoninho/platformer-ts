@@ -4,7 +4,7 @@ export default class CollisionBlock {
         this.x = x;
         this.y = y;
         this.tilesize = tilesize;
-        this.AABB = new AABB(this.tilesize, this.tilesize);
+        this.AABB = new AABB(this.x, this.y, this.tilesize, this.tilesize);
     }
     renderCollision(ctx) {
         this.AABB.setPos(this.x, this.y);

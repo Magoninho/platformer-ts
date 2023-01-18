@@ -25,7 +25,7 @@ export default class Game {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.player.init();
             yield this.levels[0].init();
-            this.ctx.scale(2, 2);
+            // this.ctx.scale(2, 2);
             for (const b of this.levels[0].getCollisionBlocks()) {
                 if (b) {
                     this.AABBList.push(b.getAABB());

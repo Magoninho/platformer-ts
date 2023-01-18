@@ -11,18 +11,18 @@ import AABB from "./AABB.js";
 import AnimatedSprite from "./AnimatedSprite.js";
 export default class Player {
     constructor(game) {
-        this.x = 80;
-        this.y = 0;
+        this.x = 260;
+        this.y = 10;
         this.dx = 0;
-        this.dy = 0;
-        this.vx = 3;
-        this.vy = 1;
-        this.AABB = new AABB(32, 32);
+        this.vx = 0;
+        this.vy = 0;
+        this.AABB = new AABB(0, 0, 32, 32);
         this.lastdir = 0;
         this.gravity = 0.2;
         this.jumping = false;
         this.currentAnimation = 'idle';
         this.character = 'PinkMan';
+        this.horizontal_speed = 0.5;
         this.game = game;
     }
     init() {
@@ -43,71 +43,162 @@ export default class Player {
         });
     }
     update() {
-        this.AABB.setPos(this.x, this.y);
         this.dx = 0;
-        this.dy = 0;
         // update animations
         for (const animation in this.animations) {
             this.animations[animation].update();
         }
         if (this.game.inputHandler.isDown(37)) { // left
             this.dx = -1;
+            this.vx -= this.horizontal_speed;
             this.lastdir = -1;
+        }
+        else if (this.game.inputHandler.isDown(39)) { // right
+            this.dx = 1;
+            this.vx += this.horizontal_speed;
+            this.lastdir = 1;
         }
         if (this.game.inputHandler.isDown(38)) { // up
             if (!this.jumping) {
                 this.jumping = true;
-                this.vy -= 5;
+                this.vy = -5;
             }
         }
-        if (this.game.inputHandler.isDown(39)) { // right
-            this.dx = 1;
-            this.lastdir = 1;
-        }
+        // console.log(this.vx);
         if (this.vy < 0) {
             this.setCurrentAnimation('jump');
         }
-        else if (this.vy > 0) {
+        else if (this.vy > 0 && this.jumping) {
             this.setCurrentAnimation('fall');
         }
         else if (this.dx != 0) {
             this.setCurrentAnimation('run');
         }
-        else {
+        else if (this.dx == 0) {
             this.setCurrentAnimation('idle');
         }
-        let collided = false;
-        for (const aabb of this.game.AABBList) {
-            if (aabb.isColliding(this.AABB)) {
-                let y_overlap = (this.AABB.getPos()[1] + 32) - aabb.getPos()[1];
-                collided = true;
-                // After colliding, check if:
-                // Player is going down
-                this.jumping = false;
-                this.vy = 0;
-                // Player is going up
-                // else if (this.vy < 0) {
-                // 	this.vy = 0
-                // }
-                this.y -= y_overlap;
-                break;
+        this.moveHorizontal(this.vx);
+        this.moveVertical(this.vy);
+        this.AABB.setPos(this.x, this.y);
+        // let collided = false;
+        // for (const aabb of this.game.AABBList) {
+        // 	if (this.AABB.isColliding(aabb)) {
+        // 		collided = true;
+        // 		break;
+        // 	}
+        // }
+        // if (!collided) {
+        // 	this.vy += this.gravity;
+        // } else {
+        // 	this.vy = 0;
+        // 	this.jumping = false;
+        // }
+    }
+    moveVertical(amount) {
+        this.y += amount;
+        this.vy += this.gravity;
+        if (this.y >= 200 - 32) {
+            this.vy = 0;
+            this.jumping = false;
+            this.y = Math.floor(this.y);
+            if (amount > 0) {
+                while (!(this.y <= 200 - 32)) {
+                    this.y -= 1;
+                }
             }
         }
-        // console.log(this.vy);
-        this.x += this.vx * this.dx;
-        this.y += this.vy;
-        if (!collided) {
-            this.vy += this.gravity;
+    }
+    moveHorizontal(amount) {
+        this.x += amount;
+        this.vx *= 0.9;
+        if (this.x >= 400 - 32) {
+            this.vx = 0;
+            this.x = Math.floor(this.x);
+            if (amount > 0) {
+                while (!(this.x >= 400 - 32)) {
+                    this.x -= 1;
+                }
+            }
         }
-        // console.log(this.vy);
-        // 	this.jumping = false;
-        // 	this.vy = 0;
+    }
+    // private move() {
+    // 	// let playerNewX = this.x + this.vx * this.dx;
+    // 	// let playerNewY = this.y + this.vy;
+    // 	this.x += this.vx;
+    // 	this.vx *= 0.7;
+    // 	this.y += this.vy;
+    // 	this.vy += this.gravity;
+    // 	// // let collision = this.game.levels[0].getTileAt(Math.floor(playerNewX), Math.floor(playerNewY)) != 0;
+    // 	// // let collision = this.game.levels[0].isSolidAt(playerNewX, playerNewY));
+    // 	// if (!this.collision(playerNewX, playerNewY)) {
+    // 	// 	this.x = playerNewX;
+    // 	// 	this.y = playerNewY;
+    // 	// } else {
+    // 	// 	this.vy = 0;
+    // 	// 	this.jumping = false;
+    // 	// }
+    // 	//this.AABB.setPos(this.x + 8, this.y + 4); // THIS LINE MUST BE HERE, THE ORDER IS VERY IMPORTANT!!!!
+    // }
+    collision(x, y) {
+        // Collision
+        let level = this.game.levels[0];
+        let intx = Math.floor(x);
+        let inty = Math.floor(y);
+        let topLeftX = intx;
+        let topLeftY = inty;
+        let topRightX = intx + 32;
+        let topRightY = inty;
+        let bottomLeftX = intx;
+        let bottomLeftY = inty + 32;
+        let bottomRightX = intx + 32;
+        let bottomRightY = inty + 32;
+        // console.log(level.isSolidAt(topLeftX, topLeftY));
+        // if player walking right
+        // if (this.dx > 0) {
+        // 	if (level.isSolidAt(topRightX, topRightY) ||
+        // 		level.isSolidAt(bottomRightX, bottomRightY)) {
+        // 		console.log("collided from left to right");
+        // 	}
         // }
+        // // if walking left
+        // else {
+        // 	if (level.isSolidAt(topLeftX, topLeftY) ||
+        // 		level.isSolidAt(bottomLeftX, bottomLeftY)) {
+        // 		console.log("collided from right to left");
+        // 	}
+        // }
+        // // player is falling
+        // if (this.vy > 0) {
+        // 	if (level.isSolidAt(bottomLeftX, bottomLeftY) ||
+        // 		level.isSolidAt(bottomRightX, bottomRightY)) {
+        // 		// console.log("collided from up to down");
+        // 		this.vy = 0;
+        // 		this.jumping = false;
+        // 	}
+        // }
+        // player is jumping
+        // else {
+        // 	if (level.isSolidAt(topLeftX, topLeftY) ||
+        // 		level.isSolidAt(topRightX, topRightY)) {
+        // 		console.log("collided from down to up");
+        // 		// console.log(this.jumping)
+        // 		this.vy *= -1;
+        // 	}
+        // }
+        // console.log(topLeftX, topLeftY);
+        // return false;
+        return (level.isSolidAt(topLeftX, topLeftY) ||
+            level.isSolidAt(topRightX, topRightY) ||
+            level.isSolidAt(bottomLeftX, bottomLeftY) ||
+            level.isSolidAt(bottomRightX, bottomRightY));
     }
     setCurrentAnimation(name) {
         this.currentAnimation = name;
     }
     render(ctx) {
+        ctx.fillStyle = "green";
+        ctx.fillRect(0, 200, 800, 200);
+        ctx.fillRect(400, 100, 800, 200);
         this.animations[this.currentAnimation].render(ctx, this.x, this.y, (this.lastdir < 0 ? true : false));
         this.AABB.render(ctx);
     }

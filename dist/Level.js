@@ -13,7 +13,7 @@ import TileSet from "./TileSet.js";
 export default class Level {
     constructor(imagePath, map) {
         this.name = "Pink World";
-        this.collisionBlocks = new Array(1000);
+        this.collisionBlocks = new Array(1000).fill(0);
         this.imagePath = imagePath;
         this.map = map;
     }
@@ -42,6 +42,19 @@ export default class Level {
                     this.collisionBlocks[j + (i * 100)].renderCollision(ctx);
             }
         }
+    }
+    getTileAt(x, y) {
+        let col = Math.floor(x / 16);
+        let row = Math.floor(y / 16);
+        return this.map[col + (row * 100)];
+    }
+    isSolidAt(x, y) {
+        let col = Math.floor(x / 16);
+        let row = Math.floor(y / 16);
+        // if it is different from 0, then it is solid
+        if (this.map[col + (row * 100)] === undefined)
+            return true;
+        return (this.map[col + (row * 100)] != 0);
     }
     getCollisionBlocks() {
         return this.collisionBlocks;

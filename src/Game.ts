@@ -18,7 +18,7 @@ export default class Game {
 	public async init() {
 		await this.player.init();
 		await this.levels[0].init();
-		this.ctx.scale(2, 2);
+		// this.ctx.scale(2, 2);
 		for (const b of this.levels[0].getCollisionBlocks()) {
 			if (b) {
 				this.AABBList.push(b.getAABB());
