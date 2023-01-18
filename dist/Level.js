@@ -19,12 +19,12 @@ export default class Level {
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.tileset = new TileSet((yield ImageUtils.loadImageFromUrl(this.imagePath)), 16, 1); // TODO: test scale later
+            this.tileset = new TileSet((yield ImageUtils.loadImageFromUrl(this.imagePath)), 16, 2); // TODO: test scale later
             // setup collision blocks
             for (let i = 0; i < 10; i++) {
                 for (let j = 0; j < 100; j++) {
                     if (this.getTileID(j, i) != 0)
-                        this.collisionBlocks[j + (i * 100)] = new CollisionBlock(j * 16, i * 16, 16);
+                        this.collisionBlocks[j + (i * 100)] = new CollisionBlock(j * 32, i * 32, 32);
                 }
             }
         });
@@ -37,20 +37,20 @@ export default class Level {
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 100; j++) {
                 let tileID = this.getTileID(j, i);
-                this.tileset.renderTileById(ctx, tileID, j * 16, i * 16);
+                this.tileset.renderTileById(ctx, tileID, j * 32, i * 32);
                 if (this.getTileID(j, i) != 0)
                     this.collisionBlocks[j + (i * 100)].renderCollision(ctx);
             }
         }
     }
     getTileAt(x, y) {
-        let col = Math.floor(x / 16);
-        let row = Math.floor(y / 16);
+        let col = Math.floor(x / 32);
+        let row = Math.floor(y / 32);
         return this.map[col + (row * 100)];
     }
     isSolidAt(x, y) {
-        let col = Math.floor(x / 16);
-        let row = Math.floor(y / 16);
+        let col = Math.floor(x / 32);
+        let row = Math.floor(y / 32);
         // if it is different from 0, then it is solid
         if (this.map[col + (row * 100)] === undefined)
             return true;

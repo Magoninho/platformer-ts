@@ -2,6 +2,11 @@ import AABB from "./AABB.js";
 import AnimatedSprite from "./AnimatedSprite.js";
 import Game from "./Game.js";
 
+
+function lerp(v0, v1, t) {
+	return v0 + t * (v1 - v0);
+}
+
 interface IAnimations {
 	[key: string]: AnimatedSprite;
 }
@@ -9,11 +14,11 @@ interface IAnimations {
 export default class Player {
 	private game: Game;
 
-	private x: number = 260;
-	private y: number = 10;
+	private x: number = 300;
+	private y: number = 100;
 	private dx: number = 0;
 	private vx: number = 0;
-	private vy: number = 0;
+	private vy: number = 1;
 	private AABB: AABB = new AABB(0, 0, 32, 32);
 	private lastdir: number = 0;
 	private gravity: number = 0.2;
@@ -22,7 +27,9 @@ export default class Player {
 	private currentAnimation = 'idle';
 	private character: string = 'PinkMan';
 
-	public horizontal_speed: number = 0.5;
+	private collisionType: string = 'none';
+
+	public horizontal_speed: number = 0.3;
 
 	constructor(game: Game) {
 		this.game = game;
@@ -49,6 +56,8 @@ export default class Player {
 
 		this.dx = 0;
 
+
+
 		// update animations
 		for (const animation in this.animations) {
 			this.animations[animation].update();
@@ -56,23 +65,25 @@ export default class Player {
 
 		if (this.game.inputHandler.isDown(37)) { // left
 			this.dx = -1;
-			this.vx -= this.horizontal_speed
+			// this.vx = Math.max(this.vx - this.horizontal_speed, -3);
+			this.vx += -0.5;
 			this.lastdir = -1;
 		} else if (this.game.inputHandler.isDown(39)) { // right
 			this.dx = 1;
-			this.vx += this.horizontal_speed;
+			// this.vx = Math.min(this.vx + this.horizontal_speed, 3);
+			this.vx += 0.5;
 			this.lastdir = 1;
 		}
 		if (this.game.inputHandler.isDown(38)) { // up
 			if (!this.jumping) {
 				this.jumping = true;
-				this.vy = -5;
+				this.vy = -6;
 			}
 		}
 
 		// console.log(this.vx);
-		
-		
+
+
 
 		if (this.vy < 0) {
 			this.setCurrentAnimation('jump');
@@ -84,13 +95,84 @@ export default class Player {
 			this.setCurrentAnimation('idle');
 		}
 
-		
-		this.moveHorizontal(this.vx);
-		this.moveVertical(this.vy);
 
-		
 
-		this.AABB.setPos(this.x, this.y);
+
+		// next player position
+
+		let playerNewX = this.x + this.vx;
+		let playerNewY = this.y + this.vy;
+
+
+		let level = this.game.levels[0];
+
+		let intx = Math.floor(playerNewX);
+		let inty = Math.floor(playerNewY);
+
+		let topLeftX: number = playerNewX;
+		let topLeftY: number = playerNewY;
+
+		let topRightX: number = playerNewX + 32;
+		let topRightY: number = playerNewY;
+
+		let bottomLeftX: number = playerNewX;
+		let bottomLeftY: number = playerNewY + 32;
+
+		let bottomRightX: number = playerNewX + 32;
+		let bottomRightY: number = playerNewY + 32;
+
+
+
+		// going right
+		if (this.vx > 0) {
+			if (level.isSolidAt(playerNewX + 32, playerNewY) ||
+				level.isSolidAt(playerNewX + 32, playerNewY + 30)) {
+
+				playerNewX = Math.floor(playerNewX); // floored position
+				this.vx = 0;
+			}
+		}
+		else if (this.vx < 0) {
+			// moving left
+			if (level.isSolidAt(playerNewX, playerNewY) ||
+				level.isSolidAt(playerNewX, playerNewY + 30)) {
+				playerNewX = Math.floor(playerNewX) + 1;
+				this.vx = 0;
+			}
+		}
+
+
+
+		// falling
+		if (this.vy > 0) {
+			if (level.isSolidAt(playerNewX, playerNewY + 32) ||
+				level.isSolidAt(playerNewX + 30, playerNewY + 32)) {
+
+				playerNewY = Math.floor(playerNewY);
+				this.vy = 0;
+				this.jumping = false;
+			}
+		}
+		else if (this.vy < 0) {
+			if (level.isSolidAt(playerNewX + 30, playerNewY) ||
+				level.isSolidAt(playerNewX, playerNewY)) {
+				playerNewY = Math.floor(playerNewY) + 1;
+				this.vy = 0;
+			}
+		}
+
+
+		this.x = playerNewX;
+		this.y = playerNewY;
+		this.vx = lerp(this.vx, 0, 0.1);
+		this.vy += this.gravity
+
+
+
+
+		// this.AABB.setPos(this.x, this.y);
+
+		// console.log(this.collision(this.x, this.y))
 
 		// let collided = false;
 
@@ -109,41 +191,8 @@ export default class Player {
 		// 	this.jumping = false;
 		// }
 
-		
 
-	}
 
-	private moveVertical(amount: number) {
-		this.y += amount;
-		this.vy += this.gravity;
-
-		if (this.y >= 200 - 32) {
-			this.vy = 0;
-			this.jumping = false;
-			this.y = Math.floor(this.y);
-			if (amount > 0) {
-				while (!(this.y <= 200 - 32))  {
-					this.y -= 1;
-				}
-			}
-		}
-	}
-	
-	private moveHorizontal(amount: number) {
-		this.x += amount;
-		this.vx *= 0.9;
-		
-		if (this.x >= 400 - 32) {
-			this.vx = 0;
-			this.x = Math.floor(this.x);
-
-			if (amount > 0) {
-				while (!(this.x >= 400 - 32)){
-					this.x -= 1;
-				}
-			}
-		}
-		
 	}
 
 	// private move() {
@@ -156,10 +205,10 @@ export default class Player {
 
 	// 	this.y += this.vy;
 	// 	this.vy += this.gravity;
-		
+
 	// 	// // let collision = this.game.levels[0].getTileAt(Math.floor(playerNewX), Math.floor(playerNewY)) != 0;
 	// 	// // let collision = this.game.levels[0].isSolidAt(playerNewX, playerNewY));
-		
+
 	// 	// if (!this.collision(playerNewX, playerNewY)) {
 	// 	// 	this.x = playerNewX;
 	// 	// 	this.y = playerNewY;
@@ -168,11 +217,11 @@ export default class Player {
 	// 	// 	this.jumping = false;
 	// 	// }
 
-		
+
 	// 	//this.AABB.setPos(this.x + 8, this.y + 4); // THIS LINE MUST BE HERE, THE ORDER IS VERY IMPORTANT!!!!
 	// }
 
-	private collision(x: number, y: number) {
+	private handleCollisions(x: number, y: number) {
 		// Collision
 		let level = this.game.levels[0];
 
@@ -182,18 +231,25 @@ export default class Player {
 		let topLeftX: number = intx;
 		let topLeftY: number = inty;
 
-		let topRightX: number = intx + 32;
+		let topRightX: number = intx + 32 - 1;
 		let topRightY: number = inty;
 
 		let bottomLeftX: number = intx;
-		let bottomLeftY: number = inty + 32;
+		let bottomLeftY: number = inty + 32 - 1;
 
-		let bottomRightX: number = intx + 32;
-		let bottomRightY: number = inty + 32;
+		let bottomRightX: number = intx + 32 - 1;
+		let bottomRightY: number = inty + 32 - 1;
 
 		// console.log(level.isSolidAt(topLeftX, topLeftY));
-		
 
+
+		// going right
+		if (this.vx > 0) {
+			if (level.isSolidAt(topRightX, topRightY) ||
+				level.isSolidAt(bottomRightX, bottomRightY)) {
+				this.x = 12;
+			}
+		}
 
 		// if player walking right
 		// if (this.dx > 0) {
@@ -231,13 +287,13 @@ export default class Player {
 		// 	}
 		// }
 		// console.log(topLeftX, topLeftY);
-		
+
 
 		// return false;
 		return (level.isSolidAt(topLeftX, topLeftY) ||
-		level.isSolidAt(topRightX, topRightY) ||
-		level.isSolidAt(bottomLeftX, bottomLeftY) ||
-		level.isSolidAt(bottomRightX, bottomRightY));
+			level.isSolidAt(topRightX, topRightY) ||
+			level.isSolidAt(bottomLeftX, bottomLeftY) ||
+			level.isSolidAt(bottomRightX, bottomRightY));
 	}
 
 	public setCurrentAnimation(name: string) {
