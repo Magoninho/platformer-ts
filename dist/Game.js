@@ -15,7 +15,6 @@ export default class Game {
     constructor() {
         this.ctx = document.getElementById('game-canvas').getContext('2d');
         this.inputHandler = new InputHandler();
-        this.player = new Player(this);
         this.levels = [
             new Level("assets/PixelAdventure/Terrain/terrain.png", map1)
         ];
@@ -23,14 +22,15 @@ export default class Game {
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.player.init();
             yield this.levels[0].init();
             // this.ctx.scale(2, 2);
             for (const b of this.levels[0].getCollisionBlocks()) {
                 if (b) {
-                    this.AABBList.push(b.getAABB());
+                    this.AABBList.push(b.AABB);
                 }
             }
+            this.player = new Player(this);
+            yield this.player.init();
             this.ctx.imageSmoothingEnabled = false; // this is the best line ever
             this.run();
         });
@@ -46,10 +46,10 @@ export default class Game {
         this.player.update();
     }
     render(ctx) {
-        ctx.clearRect(0, 0, 800, 600);
+        // ctx.clearRect(0, 0, 800, 600);
+        this.levels[0].render(ctx);
         this.player.render(ctx);
         // ctx.restore();
-        this.levels[0].render(ctx);
     }
 }
 //# sourceMappingURL=Game.js.map

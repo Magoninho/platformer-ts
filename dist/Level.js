@@ -16,30 +16,34 @@ export default class Level {
         this.collisionBlocks = new Array(1000).fill(0);
         this.imagePath = imagePath;
         this.map = map;
+        // setup collision blocks
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 100; j++) {
+                if (this.getTileID(j, i) != 0)
+                    this.collisionBlocks[j + (i * 100)] = new CollisionBlock(j * 16, i * 16, 16);
+            }
+        }
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.tileset = new TileSet((yield ImageUtils.loadImageFromUrl(this.imagePath)), 16, 2); // TODO: test scale later
-            // setup collision blocks
-            for (let i = 0; i < 10; i++) {
-                for (let j = 0; j < 100; j++) {
-                    if (this.getTileID(j, i) != 0)
-                        this.collisionBlocks[j + (i * 100)] = new CollisionBlock(j * 32, i * 32, 32);
-                }
-            }
+            this.tileset = new TileSet((yield ImageUtils.loadImageFromUrl(this.imagePath)), 16, 1); // TODO: test scale later
         });
     }
     getTileID(x, y) {
         return this.map[x + (y * 100)];
     }
     render(ctx) {
-        // this.tileset.renderTileById(ctx, 216, 0, 0);
+        for (let j = 0; j < 5; j++) {
+            for (let i = 0; i < 50; i++) {
+                ctx.drawImage(document.getElementById("bgblue"), i * 64, j * 64, 64, 64);
+            }
+        }
         for (let i = 0; i < 10; i++) {
             for (let j = 0; j < 100; j++) {
                 let tileID = this.getTileID(j, i);
-                this.tileset.renderTileById(ctx, tileID, j * 32, i * 32);
-                if (this.getTileID(j, i) != 0)
-                    this.collisionBlocks[j + (i * 100)].renderCollision(ctx);
+                this.tileset.renderTileById(ctx, tileID, (j * 16), i * 16);
+                // if (this.getTileID(j, i) != 0)
+                // 	this.collisionBlocks[j + (i * 100)].renderCollision(ctx);
             }
         }
     }

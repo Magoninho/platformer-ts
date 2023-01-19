@@ -4,7 +4,7 @@ export default class CollisionBlock {
 	private x: number;
 	private y: number;
 	private tilesize: number;
-	private AABB: AABB;
+	public AABB: AABB;
 
 	constructor(x: number, y: number, tilesize: number) {
 		this.x = x;

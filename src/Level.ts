@@ -12,20 +12,18 @@ export default class Level {
 	constructor(imagePath: string, map: number[]) {
 		this.imagePath = imagePath;
 		this.map = map;
-		
-	}
-
-	public async init() {
-		this.tileset = new TileSet((await ImageUtils.loadImageFromUrl(this.imagePath)), 16, 2); // TODO: test scale later
-		
 		// setup collision blocks
 		for (let i = 0; i < 10; i++) {
 			for (let j = 0; j < 100; j++) {
 				if (this.getTileID(j, i) != 0)
-					this.collisionBlocks[j + (i * 100)] = new CollisionBlock(j * 32, i * 32, 32);
+					this.collisionBlocks[j + (i * 100)] = new CollisionBlock(j * 16, i * 16, 16);
 			}
 		}
 		
+	}
+
+	public async init() {
+		this.tileset = new TileSet((await ImageUtils.loadImageFromUrl(this.imagePath)), 16, 1); // TODO: test scale later
 	}
 
 	public getTileID(x: number, y: number) {
@@ -33,13 +31,18 @@ export default class Level {
 	}
 
 	public render(ctx: CanvasRenderingContext2D) {
-		// this.tileset.renderTileById(ctx, 216, 0, 0);
+		
+		for (let j = 0; j < 5; j++) {
+			for (let i = 0; i < 50; i++) {
+				ctx.drawImage(document.getElementById("bgblue") as HTMLImageElement, i * 64, j * 64, 64, 64);
+			}
+		}
 		for (let i = 0; i < 10; i++) {
 			for (let j = 0; j < 100; j++) {
 				let tileID = this.getTileID(j, i);
-				this.tileset.renderTileById(ctx, tileID, j * 32, i * 32);
-				if (this.getTileID(j, i) != 0)
-					this.collisionBlocks[j + (i * 100)].renderCollision(ctx);
+				this.tileset.renderTileById(ctx, tileID, (j * 16), i * 16);
+				// if (this.getTileID(j, i) != 0)
+				// 	this.collisionBlocks[j + (i * 100)].renderCollision(ctx);
 				
 			}
 		}
