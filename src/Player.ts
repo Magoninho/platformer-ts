@@ -46,7 +46,7 @@ export default class Player {
 	private jumping: boolean = false;
 	private animations: IAnimations;
 	private currentAnimation = 'idle';
-	private character: string = 'Virtual Guy';
+	private character: string = 'PinkMan';
 
 	private collisionType: string = 'none';
 

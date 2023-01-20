@@ -34,7 +34,7 @@ export default class Player {
         this.gravity = 0.2;
         this.jumping = false;
         this.currentAnimation = 'idle';
-        this.character = 'Virtual Guy';
+        this.character = 'PinkMan';
         this.collisionType = 'none';
         this.horizontal_speed = 0.3;
         this.game = game;
