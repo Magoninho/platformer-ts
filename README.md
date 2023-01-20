@@ -9,11 +9,11 @@ This game is just a little prototype that I made to find the best way to make a 
 ## Demo
 <table>
   <tr>
-    <td><img src="demo.gif" width="250"></td>
-    <td><img src="demo2.gif" width="250"></td>
+    <td><img src="demo.gif" width="320"></td>
+    <td><img src="demo2.gif" width="320"></td>
   </tr>
   <tr>
-    <td><img src="demo3.gif" width="250"></td>
-    <td><img src="demo4.gif" width="250"></td>
+    <td><img src="demo3.gif" width="320"></td>
+    <td><img src="demo4.gif" width="320"></td>
   </tr>
 </table>
